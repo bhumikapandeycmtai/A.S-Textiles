@@ -9,9 +9,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-playfair font-semibold">AYRAJ<span className="text-gold">.</span></h3>
+            <h3 className="text-2xl font-playfair font-semibold">A.S Textiles<span className="text-gold">.</span></h3>
             <p className="text-cream">
-              Reimagining interiors with luxury designs that transform ordinary spaces into royal experiences.
+              Reimagining spaces with handcrafted elegance — where every thread transforms your home into a statement of tradition and timeless luxury.
             </p>
             <div className="flex space-x-4 pt-4">
               <a 
@@ -68,7 +68,7 @@ const Footer = () => {
               </p>
               <p className="flex items-center">
                 <Mail className="mr-2 h-5 w-5 text-gold" />
-                <a href="mailto:hanumatint@gmail.com" className="hover:text-gold transition-colors">hanumatint@gmail.com</a>
+                <a href="mailto:A.stextiles78@gmail.com" className="hover:text-gold transition-colors">hanumatint@gmail.com</a>
               </p>
             </div>
           </div>

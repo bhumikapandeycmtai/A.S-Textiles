@@ -9,7 +9,7 @@ const StickyChat = () => {
       {/* WhatsApp Button */}
       <div className="relative group">
         <a
-          href="https://wa.me/919999979079"
+          href="https://wa.me/919812640115"
           target="_blank"
           rel="noopener noreferrer"
           className={`flex items-center justify-center rounded-full ${isMobile ? "w-12 h-12" : "w-14 h-14"} bg-[#25D366] text-white hover:bg-[#20B858] shadow-lg transition-all duration-300`}
@@ -36,7 +36,7 @@ const StickyChat = () => {
       {/* Gmail Button */}
       <div className="relative group">
         <a
-          href="mailto:hanumatint@gmail.com"
+          href="mailto:A.stextiles78@gmail.com"
           className={`flex items-center justify-center rounded-full ${isMobile ? "w-12 h-12" : "w-14 h-14"} bg-white text-[#EA4335] hover:bg-gray-50 shadow-lg Itransition-all duration-300`}
           aria-label="Email Us"
         >

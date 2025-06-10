@@ -1,51 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, storage } from '@/config/firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
+import axios from 'axios';
+import AddItemForm from '@/components/admin/AddItemForm';
+import EditForm from '@/components/admin/EditForm';
 
-interface GalleryItem {
+interface ProductItem {
   id: string;
+  imageUrl: string;
   title: string;
+  price: number;
   category: string;
-  image: string;
-}
-
-interface ContactForm {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  timestamp: any;
+  shortDescription: string;
+  longDescription: string;
+  features: string[];
 }
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState('gallery');
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
-  const [contactForms, setContactForms] = useState<ContactForm[]>([]);
-  const [newItem, setNewItem] = useState({ title: '', category: '', image: '' });
+  const [activeTab, setActiveTab] = useState('product');
+  const [ProductItems, setProductItems] = useState<ProductItem[]>([]);
+  const [showProductItems, setShowProductItems] = useState<ProductItem[]>([]);
+  const [isAddItem, setIsAddItem] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editItem, setEditItem] = useState<ProductItem | null>(null);
+  const filterTitleRef = useRef<HTMLInputElement | null>(null);
+  const filterCategoryRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
 
-  // Hardcoded admin credentials
-  const ADMIN_EMAIL = 'admin@ayraj.com';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const ADMIN_EMAIL = 'admin@gmail.com';
   const ADMIN_PASSWORD = 'admin123';
+
+  const contacts = [
+    {
+      id: '1',
+      name: 'bhumika',
+      email: 'bhumika@gmail.com',
+      phno: 924525243,
+      message: 'Hello I really liked the carpets I want to order 100 of these',
+    },
+    {
+      id: '2',
+      name: 'madhvi',
+      email: 'madhvi@gmail.com',
+      phno: 88675467,
+      message: 'Hey want to colab with you for my new hotel',
+    },
+  ];
+
+  const orders = [
+    {
+      id: '1',
+      name: 'bhumika',
+      email: 'bhumika@gmail.com',
+      phno: 924525243,
+      message: 'Hello I really liked the carpets I want to order 100 of these',
+      category: 'carpets',
+      title: 'Carpet 1',
+      quantity: 44,
+    },
+    {
+      id: '2',
+      name: 'priyanka',
+      email: 'priyanka@gmail.com',
+      phno: 88675467,
+      message: 'Hey want to colab with you for my new hotel',
+      category: 'durries',
+      title: 'Durrie 1',
+      quantity: 32,
+    },
+    {
+      id: '3',
+      name: 'madhvi',
+      email: 'madhvi@gmail.com',
+      phno: 88675467,
+      message: 'My family want to buy you cushions and throws',
+      category: 'Cushions',
+      title: 'Cushion 1',
+      quantity: 70,
+    },
+  ];
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchGalleryItems();
-      fetchContactForms();
+      fetchProductItems();
     }
   }, [isAuthenticated]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
@@ -54,27 +103,32 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setIsAuthenticated(false);
     navigate('/');
   };
 
-  const fetchGalleryItems = async () => {
-    const querySnapshot = await getDocs(collection(db, 'gallery'));
-    const items = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as GalleryItem[];
-    setGalleryItems(items);
-  };
-
-  const fetchContactForms = async () => {
-    const querySnapshot = await getDocs(collection(db, 'contacts'));
-    const forms = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as ContactForm[];
-    setContactForms(forms);
+  const fetchProductItems = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get('https://a-s-textiles.vercel.app/v1/products/getallProducts');
+      const result = response.data.data;
+      // console.log(data)
+      console.log("this is resul ",result)
+      if (Array.isArray(result)) {
+        setProductItems(result);
+        setShowProductItems(result);
+        console.log("this is product item ", ProductItems);
+      } else {
+        setError('Unexpected response format from server');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch product items');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,72 +137,60 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleAddItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedFile) return;
+  const handleFilterItem = () => {
+    const filterTitle = filterTitleRef.current?.value || '';
+    const filterCategory = filterCategoryRef.current?.value || '';
+    let filtered = ProductItems;
 
-    setLoading(true);
-    try {
-      const storageRef = ref(storage, `gallery/${selectedFile.name}`);
-      await uploadBytes(storageRef, selectedFile);
-      const imageUrl = await getDownloadURL(storageRef);
-
-      const docRef = await addDoc(collection(db, 'gallery'), {
-        title: newItem.title,
-        category: newItem.category,
-        image: imageUrl
-      });
-
-      setGalleryItems([...galleryItems, { id: docRef.id, ...newItem, image: imageUrl }]);
-      setNewItem({ title: '', category: '', image: '' });
-      setSelectedFile(null);
-    } catch (error) {
-      console.error('Error adding item:', error);
+    if (filterTitle && filterCategory) {
+      filtered = ProductItems.filter(
+        (item) =>
+          item.title.toLowerCase() === filterTitle.toLowerCase() &&
+          item.category.toLowerCase() === filterCategory.toLowerCase()
+      );
+    } else if (filterTitle) {
+      filtered = ProductItems.filter(
+        (item) => item.title.toLowerCase() === filterTitle.toLowerCase()
+      );
+    } else if (filterCategory) {
+      filtered = ProductItems.filter(
+        (item) => item.category.toLowerCase() === filterCategory.toLowerCase()
+      );
+    } else {
+      setError('No items with this filter');
     }
-    setLoading(false);
+
+    setShowProductItems(filtered);
   };
 
-  const handleDeleteItem = async (id: string, imageUrl: string) => {
-    try {
-      const imageRef = ref(storage, imageUrl);
-      await deleteObject(imageRef);
-      await deleteDoc(doc(db, 'gallery', id));
-      setGalleryItems(galleryItems.filter(item => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting item:', error);
-    }
+  const handleDeleteItem = (id: string) => {
+    setProductItems(ProductItems.filter((item) => item.id !== id));
+    setShowProductItems(showProductItems.filter((item) => item.id !== id));
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md w-96">
-          <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+        <div className="bg-white p-6 md:p-8 rounded-lg shadow-md w-full max-w-md">
+          <h2 className="text-2xl text-black font-bold mb-6 text-center">Admin Login</h2>
           <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-olive text-white py-2 rounded hover:bg-olive-dark"
-            >
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-2 border rounded mb-4"
+              placeholder="Email"
+              required
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border rounded mb-6"
+              placeholder="Password"
+              required
+            />
+            <button className="w-full bg-olive text-white py-2 rounded hover:bg-olive-dark">
               Login
             </button>
           </form>
@@ -158,12 +200,10 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gray-100 mx-auto">
+      <div className="container mx-auto px-4 py-6 ">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-black">Admin Dashboard</h1>
           <button
             onClick={handleLogout}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -172,126 +212,224 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex space-x-4 mb-6">
+        <div className="min-h-screen flex flex-col md:flex-row gap-6">
+          {/* Sidebar */}
+          <aside className="md:w-64 bg-white border rounded p-4 flex md:flex-col gap-2">
+            <h2 className="text-lg font-semibold mb-2 text-gray-700">Dashboard</h2>
             <button
-              onClick={() => setActiveTab('gallery')}
-              className={`px-4 py-2 rounded ${
-                activeTab === 'gallery' ? 'bg-olive text-white' : 'bg-gray-200'
+              onClick={() => setActiveTab('product')}
+              className={`w-full py-2 rounded ${
+                activeTab === 'product' ? 'bg-olive text-white' : 'hover:bg-gray-100'
               }`}
             >
-              Gallery Management
+              Products
+            </button>
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`w-full py-2 rounded ${
+                activeTab === 'orders' ? 'bg-olive text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              Orders
             </button>
             <button
               onClick={() => setActiveTab('contacts')}
-              className={`px-4 py-2 rounded ${
-                activeTab === 'contacts' ? 'bg-olive text-white' : 'bg-gray-200'
+              className={`w-full py-2 rounded ${
+                activeTab === 'contacts' ? 'bg-olive text-white' : 'hover:bg-gray-100'
               }`}
             >
-              Contact Forms
+              Contact
             </button>
-          </div>
+          </aside>
 
-          {activeTab === 'gallery' && (
-            <div>
-              <form onSubmit={handleAddItem} className="mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Title"
-                    value={newItem.title}
-                    onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                    className="p-2 border rounded"
-                    required
+          {/* Main Content */}
+          <main className="flex-1 bg-white p-4 rounded shadow overflow-x-auto">
+            {activeTab === 'product' && (
+              <div className="flex flex-col space-y-6">
+                {!isAddItem && !isEdit && (
+                  <button
+                    type="submit"
+                    onClick={() => setIsAddItem(true)}
+                    className="bg-olive text-white px-6 py-2 rounded hover:bg-olive-dark place-self-end"
+                  >
+                    Add New Item
+                  </button>
+                )}
+                {error && <div className="text-red-500 font-medium">{error}</div>}
+                {isAddItem && (
+                  <AddItemForm
+                    setIsAddItem={setIsAddItem}
+                    handleFileChange={handleFileChange}
+                    loading={loading}
                   />
-                  <input
-                    type="text"
-                    placeholder="Category"
-                    value={newItem.category}
-                    onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                    className="p-2 border rounded"
-                    required
-                  />
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="p-2 border rounded"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-4 bg-olive text-white px-6 py-2 rounded hover:bg-olive-dark"
-                >
-                  {loading ? 'Adding...' : 'Add Item'}
-                </button>
-              </form>
+                )}
+                {isEdit && editItem && (
+                  <EditForm editItem={editItem} setIsEdit={setIsEdit} />
+                )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {galleryItems.map((item) => (
-                  <div key={item.id} className="bg-gray-50 rounded-lg overflow-hidden">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-bold">{item.title}</h3>
-                      <p className="text-gray-600">{item.category}</p>
-                      <button
-                        onClick={() => handleDeleteItem(item.id, item.image)}
-                        className="mt-2 text-red-500 hover:text-red-700"
-                      >
-                        Delete
-                      </button>
+                {!isEdit && !isAddItem && (
+                  <div>
+                    <div className="mb-4">
+                      <h1 className="text-2xl font-bold text-black mb-4">Filter Item</h1>
+                      <div className="flex flex-wrap gap-4">
+                        <input
+                          type="text"
+                          placeholder="Title"
+                          ref={filterTitleRef}
+                          className="flex-1 min-w-[120px] px-4 py-2 border rounded"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Category"
+                          ref={filterCategoryRef}
+                          className="flex-1 min-w-[120px] px-4 py-2 border rounded"
+                        />
+                        <button
+                          onClick={handleFilterItem}
+                          disabled={loading}
+                          className="bg-olive text-white px-6 py-2 rounded hover:bg-olive-dark"
+                        >
+                          {loading ? 'Filtering...' : 'Filter'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {showProductItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-gray-50 rounded-lg overflow-hidden shadow"
+                        >
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="w-full h-48 object-cover"
+                          />
+                          <div className="p-4">
+                            <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                              {item.category}
+                            </span>
+                            <h3 className="font-semibold text-gray-800 mt-2">{item.title}</h3>
+                            <div className="flex justify-between mt-2">
+                              <button
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-red-500 hover:text-red-700 text-sm"
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditItem(item);
+                                  setIsEdit(true);
+                                }}
+                                className="text-green-500 hover:text-green-700 text-sm"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+              </div>
+            )}
+
+            {activeTab === 'contacts' && (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-100 text-left">
+                      <th className="p-3">Name</th>
+                      <th className="p-3">Email</th>
+                      <th className="p-3">Phone</th>
+                      <th className="p-3">Message</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.map((contact) => (
+                      <tr key={contact.id} className="border-b">
+                        <td className="p-3">{contact.name}</td>
+                        <td className="p-3">{contact.email}</td>
+                        <td className="p-3">{contact.phno}</td>
+                        <td className="p-3">{contact.message}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === 'orders' && (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-100 text-left">
+                      <th className="p-3">Name</th>
+                      <th className="p-3">Email</th>
+                      <th className="p-3">Phno</th>
+                      <th className="p-3">Message</th>
+                      <th className="p-3">Category</th>
+                      <th className="p-3">Title</th>
+                      <th className="p-3">Quantity</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((form) => (
+                      <tr key={form.id} className="border-b">
+                        <td className="p-3">{form.name}</td>
+                        <td className="p-3">{form.email}</td>
+                        <td className="p-3">{form.phno}</td>
+                        <td className="p-3">{form.message}</td>
+                        <td className="p-3">{form.category}</td>
+                        <td className="p-3">{form.title}</td>
+                        <td className="p-3">{form.quantity}</td>
+                        <td className='flex items-center justify-center'>
+                          <button className='bg-red-600 text-white py-1 px-2 rounded-md'>Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </main>
+          {/* 🧾 Delete Confirmation Modal */}
+        {deleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-[90%] max-w-md text-center">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Delete Item</h2>
+              <p className="text-gray-600 mb-6">Are you sure you want to delete this item?</p>
+              <div className="flex justify-center gap-4">
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  onClick={() => {
+                    if (deleteItemId) handleDeleteItem(deleteItemId);
+                    setDeleteModalOpen(false);
+                    setDeleteItemId(null);
+                  }}
+                >
+                  Delete
+                </button>
+                <button
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                  onClick={() => {
+                    setDeleteModalOpen(false);
+                    setDeleteItemId(null);
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          )}
-
-          {activeTab === 'contacts' && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Message
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {contactForms.map((form) => (
-                    <tr key={form.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">{form.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{form.email}</td>
-                      <td className="px-6 py-4">{form.message}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {new Date(form.timestamp?.toDate()).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
+          </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

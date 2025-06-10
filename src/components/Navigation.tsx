@@ -39,7 +39,7 @@ const Navigation = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               src="/images/logo11.png"
-              alt="Ayraj Logo"
+              alt="A.S textiles Logo"
               className={cn(
                 'h-24 w-auto transition-all duration-300',
                 isScrolled ? 'h-20' : 'h-24'
@@ -58,7 +58,7 @@ const Navigation = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <span className={isScrolled ? 'text-olive' : 'text-white'}>
-              {isMenuOpen ? '×' : '☰'}
+              {isMenuOpen ? 'x' : '☰'}
             </span>
           </motion.button>
 
@@ -67,12 +67,11 @@ const Navigation = () => {
             <NavLink to="/" isScrolled={isScrolled}>Home</NavLink>
             <NavLink to="/about" isScrolled={isScrolled}>About Us</NavLink>
             <NavLink to="/services" isScrolled={isScrolled}>Services</NavLink>
-            <NavLink to="/gallery" isScrolled={isScrolled}>Gallery</NavLink>
             <NavLink to="/contact" isScrolled={isScrolled}>Contact</NavLink>
             <motion.a
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              href="https://wa.me/919310891509"
+              href="https://wa.me/919812640115"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/config/firebase';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import StickyChat from '@/components/StickyChat';
@@ -22,17 +21,17 @@ const Contact = () => {
     setLoading(true);
     setError('');
     
-    try {
-      await addDoc(collection(db, 'contacts'), {
-        ...formData,
-        timestamp: serverTimestamp()
-      });
-      setSuccess(true);
-      setFormData({ name: '', email: '', phone: '', message: '' });
-    } catch (err) {
-      setError('Failed to send message. Please try again.');
-      console.error('Error submitting form:', err);
-    }
+    // try {
+    //   await addDoc(collection(db, 'contacts'), {
+    //     ...formData,
+    //     timestamp: serverTimestamp()
+    //   });
+    //   setSuccess(true);
+    //   setFormData({ name: '', email: '', phone: '', message: '' });
+    // } catch (err) {
+    //   setError('Failed to send message. Please try again.');
+    //   console.error('Error submitting form:', err);
+    // }
     
     setLoading(false);
   };
