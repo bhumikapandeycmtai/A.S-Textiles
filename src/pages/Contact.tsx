@@ -223,7 +223,8 @@ const Contact = () => {
         {/* Map Section */}
         <section className="h-[500px] relative">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3504.5384411196513!2d77.2351013!3d28.5475843!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce3c59a771f85%3A0x6ed1e6e4b98c4e49!2sGreater%20Kailash%2C%20New%20Delhi%2C%20Delhi%20110048!5e0!3m2!1sen!2sin!4v1709794548974!5m2!1sen!2sin"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27803.96244888516!2d76.91856675358193!3d29.41431679903187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ddbce137cc249%3A0x2f40dee69b9a9f86!2sHari%20Nagar%2C%20Panipat%2C%20Haryana%20132103!5e0!3m2!1sen!2sin!4v1749642364692!5m2!1sen!2sin"
+            
             width="100%"
             height="100%"
             style={{ border: 0 }}
