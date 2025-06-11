@@ -108,7 +108,7 @@ const AddItemForm = ({
       }
 
       const response = await axios.post(
-        'https://a-s-textiles.vercel.app/v1/products/newProduct',
+        `${import.meta.env.VITE_API_BACKEND_URL}/v1/products/newProduct`,
         formData,
         {
           headers: {

@@ -26,7 +26,7 @@ const ContactView = () => {
 
   async function fetchContacts() {
     try {
-      const response = await axios.get('https://a-s-textiles.vercel.app/v1/contacts/getallContacts');
+      const response = await axios.get(`${import.meta.env.VITE_API_BACKEND_URL}/v1/contacts/getallContacts`);
       const data = response.data.data;
       setContacts(data || []);
     } catch (error) {
@@ -47,7 +47,7 @@ const ContactView = () => {
   async function confirmDeleteItem() {
     if (!deleteContactId) return;
     try {
-      await axios.delete(`https://a-s-textiles.vercel.app/v1/contacts/deleteContact/${deleteContactId}`);
+      await axios.delete(`${import.meta.env.VITE_API_BACKEND_URL}/v1/contacts/deleteContact/${deleteContactId}`);
       setToastMessage('Contact deleted successfully.');
       setToastSuccess(true);
       setShowToast(true);

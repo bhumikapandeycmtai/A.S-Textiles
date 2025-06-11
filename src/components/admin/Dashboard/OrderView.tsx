@@ -27,7 +27,7 @@ const OrderView = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await axios.get('https://a-s-textiles.vercel.app/v1/product-leads/getallProductLeads');
+      const response = await axios.get(`${import.meta.env.VITE_API_BACKEND_URL}/v1/product-leads/getallProductLeads`);
       const data = response.data.data;
 
       if (Array.isArray(data)) {

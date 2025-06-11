@@ -69,7 +69,7 @@ const EditForm = ({
 
     try {
       formData.append('updatedAt', now)
-      await axios.put(`https://a-s-textiles.vercel.app/v1/products/updateProduct/${newItem.id}`, formData, {
+      await axios.put(`${import.meta.env.VITE_API_BACKEND_URL}/v1/products/updateProduct/${newItem.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -147,7 +147,7 @@ const EditForm = ({
           <h1 className="text-2xl text-black font-bold">Edit Form</h1>
           <button
             type="button"
-            className="bg-olive text-sm text-white px-2 py-1 rounded hover:bg-olive-dark flex items-center gap-1"
+            className="bg-olive text-sm text-white px-3 py-2 rounded hover:bg-olive-dark flex items-center gap-1"
             onClick={() => setIsEdit(false)}
           >
             <svg

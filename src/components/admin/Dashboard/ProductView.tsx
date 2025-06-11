@@ -126,7 +126,7 @@ const ProductView = () => {
   const confirmDeleteItem = async () => {
     if (!deleteItemId) return;
     try {
-      await axios.delete(`https://a-s-textiles.vercel.app/v1/products/deleteProduct/${deleteItemId}`);
+      await axios.delete(`${import.meta.env.VITE_API_BACKEND_URL}/v1/products/deleteProduct/${deleteItemId}`);
       setProductItems(prev => prev.filter(item => item.id !== deleteItemId));
       setShowProductItems(prev => prev.filter(item => item.id !== deleteItemId));
       setToastMessage("Item deleted successfully.");
@@ -278,13 +278,13 @@ const ProductView = () => {
                   <div className="flex justify-between mt-4">
                     <button 
                       onClick={(e) => { e.stopPropagation(); openDeleteModal(item.id); }} 
-                      className="text-red-500 hover:text-red-700 text-sm font-medium z-10 relative"
+                      className="text-red-500 hover:text-red-700 text-sm p-2 font-medium z-10 relative"
                     >
                       Delete
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setEditItem(item); setIsEdit(true); }} 
-                      className="text-green-500 hover:text-green-700 text-sm font-medium z-10 relative"
+                      className="text-green-500 hover:text-green-700 text-sm p-2 font-medium z-10 relative"
                     >
                       Edit
                     </button>
