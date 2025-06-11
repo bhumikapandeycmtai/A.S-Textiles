@@ -27,7 +27,7 @@ const CtaBanner = () => {
           </Link>
           
           <a 
-            href="https://wa.me/919999979079"
+            href="https://wa.me/919812640115"
             target="_blank"
             rel="noopener noreferrer" 
             className={`btn-outline border-white/80 ${isMobile ? 'text-sm px-4 py-2' : ''}`}

@@ -97,7 +97,7 @@ const Navigation = () => {
               <motion.a
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                href="https://wa.me/919999979079"
+                href="https://wa.me/919812640115"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary w-full text-center justify-center"

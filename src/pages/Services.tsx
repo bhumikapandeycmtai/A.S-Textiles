@@ -94,7 +94,7 @@ const Services = () => {
               </p>
               
               <a
-                href="https://wa.me/919999979079"
+                href="https://wa.me/919812640115"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary inline-flex mx-auto bg-[#25D366] hover:bg-[#20B858] border-none"
