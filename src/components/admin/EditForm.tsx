@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import items from '@/db';
+import axios from 'axios';
 
 type ItemType = {
   id: string;
-  imageUrl: string;
+  imageUrl: string | File;
   title: string;
   price: number;
   category: string;
@@ -22,59 +22,73 @@ const EditForm = ({
   const [newItem, setNewItem] = useState<ItemType | null>(null);
 
   useEffect(() => {
-  if (editItem) {
-    let parsedFeatures: string[] = [];
+    if (editItem) {
+      let parsedFeatures: string[] = [];
 
-    //check features should be array and can be mapped
-    if (Array.isArray(editItem.features)) {
-      parsedFeatures = editItem.features;
-    } else if (typeof editItem.features === 'string') {
-      try {
-        const maybeParsed = JSON.parse(editItem.features);
-        parsedFeatures = Array.isArray(maybeParsed) ? maybeParsed : [];
-      } catch {
-        parsedFeatures = [];
+      // This logic for parsing features is good.
+      if (Array.isArray(editItem.features)) {
+        parsedFeatures = editItem.features;
+      } else if (typeof editItem.features === 'string') {
+        try {
+          const maybeParsed = JSON.parse(editItem.features);
+          parsedFeatures = Array.isArray(maybeParsed) ? maybeParsed : [];
+        } catch {
+          parsedFeatures = [];
+        }
       }
+
+      setNewItem({
+        ...editItem,
+        features: parsedFeatures,
+      });
     }
-
-    setNewItem({
-      ...editItem,
-      features: parsedFeatures,
-    });
-  }
-}, [editItem]);
-
-
-
+  }, [editItem]);
 
   const handleEdit = async () => {
     if (!newItem) return;
 
-    const updatedItems = items.map((item) => {
-      if (item.id === newItem.id) {
-        const isDifferent = Object.keys(item).some(
-          (key) => item[key as keyof ItemType] !== newItem[key as keyof ItemType]
-        );
+    const formData = new FormData();
+    const now = new Date().toISOString();
 
-        if (isDifferent) {
-          return { ...item, ...newItem };
-        }
-      }
-      return item;
-    });
+    // This logic is fine
+    if (newItem.title !== editItem.title) formData.append('title', newItem.title);
+    if (newItem.category !== editItem.category) formData.append('category', newItem.category);
+    if (newItem.price !== editItem.price) formData.append('price', String(newItem.price));
+    if (newItem.shortDescription !== editItem.shortDescription)
+      formData.append('shortDescription', newItem.shortDescription);
+    if (newItem.longDescription !== editItem.longDescription)
+      formData.append('longDescription', newItem.longDescription);
 
-    console.log('Updated items:', updatedItems);
-    // Save to DB or state if needed
+    if (JSON.stringify(newItem.features) !== JSON.stringify(editItem.features)) {
+      formData.append('features', JSON.stringify(newItem.features));
+    }
+
+    if (newItem.imageUrl instanceof File) {
+      formData.append('imageUrl', newItem.imageUrl);
+    }
+
+    try {
+      formData.append('updatedAt', now)
+      await axios.put(`https://a-s-textiles.vercel.app/v1/products/updateProduct/${newItem.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      alert('Product updated successfully!');
+      setIsEdit(false);
+    } catch (error) {
+      console.error('Failed to update:', error);
+      alert('Update failed!');
+    }
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-
     setNewItem((prev) => {
       if (!prev) return null;
-
       return {
         ...prev,
         [name]: name === 'price' ? Number(value) : value,
@@ -85,10 +99,8 @@ const EditForm = ({
   const handleFeatureChange = (index: number, value: string) => {
     setNewItem((prev) => {
       if (!prev) return null;
-
       const updatedFeatures = [...prev.features];
       updatedFeatures[index] = value;
-
       return {
         ...prev,
         features: updatedFeatures,
@@ -99,13 +111,25 @@ const EditForm = ({
   const handleFeatureDelete = (index: number) => {
     setNewItem((prev) => {
       if (!prev) return null;
-
       const updatedFeatures = prev.features.filter((_, i) => i !== index);
       return {
         ...prev,
         features: updatedFeatures,
       };
     });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNewItem((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          imageUrl: file,
+        };
+      });
+    }
   };
 
   if (!newItem) return <div>Loading...</div>;
@@ -140,109 +164,76 @@ const EditForm = ({
           </button>
         </div>
 
-        {/* Form Fields with Labels */}
+        {/* --- Form fields are unchanged --- */}
         <div className="flex flex-col gap-2">
-          <label htmlFor="title" className="font-medium text-black">
-            Title
-          </label>
-          <input
-            id="title"
-            type="text"
-            name="title"
-            value={newItem.title}
-            onChange={handleChange}
-            className="px-6 py-2 border rounded"
-          />
-
-          <label htmlFor="category" className="font-medium text-black">
-            Category
-          </label>
-          <input
-            id="category"
-            type="text"
-            name="category"
-            value={newItem.category}
-            onChange={handleChange}
-            className="px-6 py-2 border rounded"
-          />
-
-          <label htmlFor="price" className="font-medium text-black">
-            Price
-          </label>
-          <input
-            id="price"
-            type="number"
-            name="price"
-            value={newItem.price}
-            onChange={handleChange}
-            className="px-6 py-2 border rounded"
-          />
-
-          <label htmlFor="shortDescription" className="font-medium text-black">
-            Short Description
-          </label>
-          <input
-            id="shortDescription"
-            type="text"
-            name="shortDescription"
-            value={newItem.shortDescription}
-            onChange={handleChange}
-            className="px-6 py-2 border rounded"
-          />
-
-          <label htmlFor="longDescription" className="font-medium text-black">
-            Long Description
-          </label>
-          <input
-            id="longDescription"
-            type="text"
-            name="longDescription"
-            value={newItem.longDescription}
-            onChange={handleChange}
-            className="px-6 py-2 border rounded"
-          />
+          <label className="font-medium text-black">Title</label>
+          <input name="title" value={newItem.title} onChange={handleChange} className="px-6 py-2 border rounded" />
+          <label className="font-medium text-black">Category</label>
+          <input name="category" value={newItem.category} onChange={handleChange} className="px-6 py-2 border rounded" />
+          <label className="font-medium text-black">Price</label>
+          <input name="price" type="number" value={newItem.price} onChange={handleChange} className="px-6 py-2 border rounded" />
+          <label className="font-medium text-black">Short Description</label>
+          <input name="shortDescription" value={newItem.shortDescription} onChange={handleChange} className="px-6 py-2 border rounded" />
+          <label className="font-medium text-black">Long Description</label>
+          <input name="longDescription" value={newItem.longDescription} onChange={handleChange} className="px-6 py-2 border rounded" />
         </div>
 
-        {/* Features Section */}
         <div className="mt-4">
           <label className="font-medium text-black">Features</label>
           {newItem.features.map((feature, index) => (
             <div key={index} className="flex items-center gap-2 mt-2">
-              <input
-                type="text"
-                value={feature}
-                onChange={(e) => handleFeatureChange(index, e.target.value)}
-                className="flex-1 px-4 py-2 border rounded"
-                placeholder={`Feature ${index + 1}`}
-              />
-              <button
-                type="button"
-                onClick={() => handleFeatureDelete(index)}
-                className="px-3 py-2 text-white bg-red-500 rounded hover:bg-red-600"
-              >
+              <input type="text" value={feature} onChange={(e) => handleFeatureChange(index, e.target.value)} className="flex-1 px-4 py-2 border rounded" placeholder={`Feature ${index + 1}`} />
+              <button type="button" onClick={() => handleFeatureDelete(index)} className="px-3 py-2 text-white bg-red-500 rounded hover:bg-red-600">
                 Delete
               </button>
             </div>
           ))}
         </div>
+        {/* --- End of unchanged form fields --- */}
 
-        {/* Image Section */}
-        <div className="flex gap-4 justify-between mt-4">
+        {/* ======================= FIX STARTS HERE ======================= */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between mt-4">
           <div>
-            <h2 className="text-black text-xl mb-2">Previous Image</h2>
-            <img src={editItem.imageUrl} className="w-48 border rounded" alt="Previous" />
+            <h2 className="text-black text-xl mb-2">Current Image</h2>
+            {/* 
+              FIX 1: Display the original image URL directly.
+              `editItem.imageUrl` is always a string from the server.
+            */}
+            {typeof editItem.imageUrl === 'string' && (
+              <img
+                src={editItem.imageUrl}
+                className="w-48 border rounded"
+                alt="Current"
+              />
+            )}
           </div>
           <div>
             <h2 className="text-black text-xl mb-2">Upload New Image</h2>
-            <input type="file" className="p-2 border rounded" />
+            <input type="file" accept="image/*" onChange={handleImageChange} className="p-2 border rounded w-full" />
+            
+            {/* 
+              FIX 2: Add a preview for the newly selected image.
+              This logic correctly uses `URL.createObjectURL` only when `newItem.imageUrl` is a File.
+            */}
+            {newItem.imageUrl instanceof File && (
+              <div className="mt-2">
+                <h3 className="text-black text-lg mb-1">New Image Preview</h3>
+                <img
+                  src={URL.createObjectURL(newItem.imageUrl)}
+                  className="w-48 border rounded"
+                  alt="New preview"
+                />
+              </div>
+            )}
           </div>
         </div>
+        {/* ======================== FIX ENDS HERE ======================== */}
 
         <button
           type="submit"
           className="bg-olive text-white px-6 py-2 rounded hover:bg-olive-dark mt-4"
         >
-          Edit
+          Update Product
         </button>
       </form>
     </div>

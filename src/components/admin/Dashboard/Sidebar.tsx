@@ -2,16 +2,16 @@ import React from 'react';
 
 interface SidebarProps {
   activeTab: string;
-  setActiveTab: (tab: string) => void;
+  setActiveTab: (tab: 'product' | 'orders' | 'contacts') => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
   return (
     <aside className="md:w-64 bg-white border rounded p-4 flex md:flex-col gap-2">
       <h2 className="text-lg font-semibold mb-2 text-gray-700">Dashboard</h2>
       <button
         onClick={() => setActiveTab('product')}
-        className={`w-full py-2 rounded ${
+        className={`w-full text-left p-2 rounded ${
           activeTab === 'product' ? 'bg-olive text-white' : 'hover:bg-gray-100'
         }`}
       >
@@ -19,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
       </button>
       <button
         onClick={() => setActiveTab('orders')}
-        className={`w-full py-2 rounded ${
+        className={`w-full text-left p-2 rounded ${
           activeTab === 'orders' ? 'bg-olive text-white' : 'hover:bg-gray-100'
         }`}
       >
@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
       </button>
       <button
         onClick={() => setActiveTab('contacts')}
-        className={`w-full py-2 rounded ${
+        className={`w-full text-left p-2 rounded ${
           activeTab === 'contacts' ? 'bg-olive text-white' : 'hover:bg-gray-100'
         }`}
       >

@@ -66,7 +66,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for AYRAJ
+				// Custom colors for A.S Textiles
 				olive: {
 					light: '#393E46',
 					DEFAULT: '#222831',

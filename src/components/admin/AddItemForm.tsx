@@ -16,9 +16,23 @@ interface AddItemFormProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   loading: boolean;
   setIsAddItem: React.Dispatch<React.SetStateAction<boolean>>;
+  setToastMessage: React.Dispatch<React.SetStateAction<string>>;
+  setToastSuccess: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowToast: React.Dispatch<React.SetStateAction<boolean>>;
+  refreshProducts: ()=>void // <-- Added this line
+
 }
 
-const AddItemForm = ({ handleFileChange, loading, setIsAddItem }: AddItemFormProps) => {
+
+const AddItemForm = ({
+  handleFileChange,
+  loading,
+  setIsAddItem,
+  setToastMessage,
+  setToastSuccess,
+  setShowToast,
+  refreshProducts
+}: AddItemFormProps) => {
   const [newItem, setNewItem] = useState<newItemType>({
     id: '',
     title: '',
@@ -74,6 +88,7 @@ const AddItemForm = ({ handleFileChange, loading, setIsAddItem }: AddItemFormPro
 
     try {
       const formData = new FormData();
+      const now = new Date().toISOString();
 
       // Append fields
       formData.append('title', newItem.title);
@@ -84,10 +99,12 @@ const AddItemForm = ({ handleFileChange, loading, setIsAddItem }: AddItemFormPro
 
       // Append features as JSON string (if backend expects this way)
       formData.append('features', JSON.stringify(newItem.features));
+       formData.append('createdAt', now);
+      formData.append('updatedAt', now);
 
       // Append image
       if (selectedImage) {
-        formData.append('imageUrl', selectedImage);
+        formData.append('image', selectedImage);
       }
 
       const response = await axios.post(
@@ -100,7 +117,7 @@ const AddItemForm = ({ handleFileChange, loading, setIsAddItem }: AddItemFormPro
         }
       );
 
-      console.log('✅ Product added successfully:', response.data);
+      console.log('Product added successfully:', response.data);
 
       // Reset form
       setNewItem({
@@ -112,10 +129,19 @@ const AddItemForm = ({ handleFileChange, loading, setIsAddItem }: AddItemFormPro
         longDescription: '',
         features: [],
       });
-      setSelectedImage(null);
       setNewFeature('');
+      setSelectedImage(null);
+      setToastMessage('New Product is added.');
+      setToastSuccess(true);
+      setShowToast(true);
+      setIsAddItem(false)
+      refreshProducts()
     } catch (error) {
-      console.error('❌ Error adding product:', error);
+      console.error('Error adding product:', error);
+      setToastMessage('Failed to add product.');
+      setToastSuccess(false);
+      setShowToast(true);
+
     } finally {
       setIsSubmitting(false);
     }

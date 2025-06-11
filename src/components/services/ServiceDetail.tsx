@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -297,6 +297,14 @@ const ServiceDetail = ({ service }: ServiceDetailProps) => {
                       ))}
                     </ol>
                   </motion.div>
+                <div className='pt-4 place-self-end'>
+                      <Link to="/products" className="inline-flex items-center text-white/90 mb-8 hover:text-gold transition-all duration-300 group place-self-end">
+                      <button className='bg-olive text-base text-white px-5 py-3 rounded hover:bg-olive-dark flex items-center gap-2'>
+                        View Products
+                        <ArrowRight className=" transform group-hover:translate-x-1 transition-transform" size={18} />
+                      </button>
+              </Link>
+                </div>
                 </motion.div>
               </motion.div>
               
@@ -522,7 +530,7 @@ const ServiceDetail = ({ service }: ServiceDetailProps) => {
                 <motion.div variants={itemVariants}>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <a
-                      href="https://wa.me/919999979079"
+                      href="https://wa.me/919812640115"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-secondary px-6 py-3 md:px-8 md:py-4 text-base md:text-lg font-medium inline-flex items-center gap-2"

@@ -38,16 +38,13 @@ const Navigation = () => {
             <motion.img
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              src="/images/logo11.png"
+              src="/images/ASTextiles.jpg"
               alt="A.S textiles Logo"
               className={cn(
-                'h-24 w-auto transition-all duration-300',
-                isScrolled ? 'h-20' : 'h-24'
+                'h-16 w-auto transition-all duration-300',
+                isScrolled ? 'h-16' : 'h-16'
               )}
-              style={{
-                filter: isScrolled ? 'none' : 'brightness(0) invert(1)',
-                mixBlendMode: isScrolled ? 'normal' : 'lighten'
-              }}
+              
             />
           </Link>
 
@@ -67,6 +64,7 @@ const Navigation = () => {
             <NavLink to="/" isScrolled={isScrolled}>Home</NavLink>
             <NavLink to="/about" isScrolled={isScrolled}>About Us</NavLink>
             <NavLink to="/services" isScrolled={isScrolled}>Services</NavLink>
+            <NavLink to="/products" isScrolled={isScrolled}>Products</NavLink>
             <NavLink to="/contact" isScrolled={isScrolled}>Contact</NavLink>
             <motion.a
               whileHover={{ scale: 1.05 }}
