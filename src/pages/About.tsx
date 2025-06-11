@@ -214,7 +214,7 @@ export default function AboutUs() {
                Our in-house team of designers and textile experts collaborates closely with clients to develop cohesive, custom-styled decor solutions.
                With a focus on quality, tradition, and trend, we transform your interiors with textures that tell a story — rooted in Indian craftsmanship and made for modern living.
               </p>
-              <Link to="/my-work">
+              <Link to="/products">
                 <Button className="bg-olive hover:bg-olive text-white mt-4">
                   Explore Our Collections
                   <ArrowRight className="ml-2 w-4 h-4" />

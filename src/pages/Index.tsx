@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import HeroSection from '@/components/home/HeroSection';
 import ServiceOverview from '@/components/home/ServiceOverview';
 import AboutPreview from '@/components/home/AboutPreview';
-import PortfolioPreview from '@/components/home/PortfolioPreview';
+// import PortfolioPreview from '@/components/home/PortfolioPreview';
 import Testimonials from '@/components/home/Testimonials';
 import CtaBanner from '@/components/home/CtaBanner';
 import Navigation from '@/components/Navigation';

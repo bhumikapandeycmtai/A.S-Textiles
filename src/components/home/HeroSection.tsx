@@ -92,7 +92,7 @@ const HeroSection = () => {
             whileTap={{ scale: 0.95 }}
             className="w-full sm:w-auto"
           >
-            <Link to="/services" className="btn-primary w-full sm:w-auto flex items-center justify-center">
+            <Link to="/products" className="btn-primary w-full sm:w-auto flex items-center justify-center">
               Explore Collection <ArrowRight size={isMobile ? 16 : 18} className="ml-2" />
             </Link>
           </motion.div>

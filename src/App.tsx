@@ -7,10 +7,10 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
-import Gallery from "./pages/Gallery";
+// import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-import MyWork from "./pages/MyWork";
+// import MyWork from "./pages/MyWork";
 import AdminDashboard from "./pages/AdminDashboard";
 import Products from "./pages/Products";
 
@@ -28,9 +28,8 @@ const App = () => (
           <Route path="/services" element={<Services />} />
           <Route path="/products" element={<Products />} />
           <Route path="/services/:slug" element={<ServiceDetailPage />} />
-          <Route path="/gallery" element={<Gallery />} />
+          {/* <Route path="/gallery" element={<Gallery />} /> */}
           <Route path="/contact" element={<Contact />} />
-          <Route path="/my-work" element={<MyWork />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           <Route path="/admin" element={<AdminDashboard />} />
