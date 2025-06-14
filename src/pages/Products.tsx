@@ -1,9 +1,12 @@
+// src/pages/Products.tsx
+
 import Navigation from '@/components/Navigation';
 import ProductCard from '@/components/ProductCard';
 import { Badge } from "@/components/ui/badge";
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
 
-// 1. TypeScript Type Definition for a Product (No changes)
+// Interfaces remain the same
 interface Product {
   id: string;
   imageUrl: string;
@@ -17,103 +20,167 @@ interface Product {
   updatedAt: string;
 }
 
-// 2. Dummy Product Array with Handloom Products (No changes)
-const dummyProducts: Product[] = [
-    {
-    id: 'prod_h01',
-    imageUrl: 'https://i.pinimg.com/736x/da/1b/f7/da1bf79f88f9b8b5baa347832c8e3a7b.jpg',
-    title: 'Hand-Woven Jute Storage Basket',
-    price: 45.00,
-    category: 'Storage & Organization',
-    shortDescription: 'Eco-friendly and stylish, this jute basket is perfect for organizing magazines, toys, or blankets. A touch of rustic charm for any room.',
-    longDescription: 'Each basket is meticulously hand-woven by skilled artisans using natural, sustainable jute fibers. Its sturdy construction ensures it holds its shape, while the soft texture is safe for kids and pets. A perfect blend of functionality and natural beauty.',
-    features: ['100% Natural Jute', 'Hand-Woven by Artisans', 'Sturdy & Durable', 'Eco-Friendly'],
-    createdAt: '2023-10-26T10:00:00Z',
-    updatedAt: '2023-10-26T10:00:00Z',
-  },
-  {
-    id: 'prod_h02',
-    imageUrl: 'https://i.pinimg.com/736x/da/1b/f7/da1bf79f88f9b8b5baa347832c8e3a7b.jpg',
-    title: 'Bohemian Macrame Wall Art',
-    price: 79.99,
-    category: 'Wall Decor',
-    shortDescription: 'Add a touch of bohemian elegance to your walls with this handcrafted macrame piece. Made from 100% natural cotton rope.',
-    longDescription: 'This beautiful macrame wall hanging is designed to be a centerpiece. Its intricate knots and flowing tassels create a sense of calm and artistry, making it an ideal addition to a living room, bedroom, or nursery.',
-    features: ['100% Natural Cotton', 'Intricate Knotting Detail', 'Includes Wooden Dowel', 'Adds Textural Interest'],
-    createdAt: '2023-10-25T14:30:00Z',
-    updatedAt: '2023-10-25T14:30:00Z',
-  },
-  {
-    id: 'prod_h03',
-    imageUrl: 'https://i.pinimg.com/736x/da/1b/f7/da1bf79f88f9b8b5baa347832c8e3a7b.jpg',
-    title: 'Artisan\'s Touch Wool Carpet',
-    price: 399.50,
-    category: 'Rugs & Carpets',
-    shortDescription: 'A luxurious, hand-knotted wool carpet featuring traditional motifs. Its plush texture and rich, vegetable-dyed colors will anchor any living space.',
-    longDescription: 'Experience true luxury underfoot with this hand-knotted carpet. Made from high-quality New Zealand wool, it is naturally stain-resistant and incredibly durable. The timeless design ensures it will be a cherished part of your home for generations.',
-    features: ['Hand-Knotted New Zealand Wool', 'Vegetable-Dyed Colors', 'Plush 1-inch Pile', 'Naturally Stain-Resistant'],
-    createdAt: '2023-10-24T09:00:00Z',
-    updatedAt: '2023-10-24T09:00:00Z',
-  },
-  {
-    id: 'prod_h04',
-    imageUrl: 'https://i.pinimg.com/736x/da/1b/f7/da1bf79f88f9b8b5baa347832c8e3a7b.jpg',
-    title: 'Jaipuri Geometric Durrie',
-    price: 125.00,
-    category: 'Rugs & Carpets',
-    shortDescription: 'A vibrant, flat-woven durrie from Jaipur, known for its bold geometric patterns and durability. This is a very long description that is specifically designed to test the line-clamp functionality to ensure it properly truncates the text with an ellipsis.',
-    longDescription: 'This cotton durrie is a masterpiece of flat-weave design, making it lightweight, reversible, and easy to clean. Perfect for high-traffic areas, it brings a pop of color and modern design inspired by the architecture of Jaipur.',
-    features: ['100% Cotton Flat-Weave', 'Reversible Design', 'Easy to Clean', 'Bold Geometric Pattern'],
-    createdAt: '2023-10-23T18:00:00Z',
-    updatedAt: '2023-10-23T18:00:00Z',
-  },
-  {
-    id: 'prod_h05',
-    imageUrl: 'https://i.pinimg.com/736x/da/1b/f7/da1bf79f88f9b8b5baa347832c8e3a7b.jpg',
-    title: 'Acacia Wood Serving Tray',
-    price: 65.00,
-    category: 'Home Goods',
-    shortDescription: 'A beautifully crafted serving tray made from solid acacia wood, featuring a rich grain and natural finish. Perfect for serving drinks or as a decorative piece.',
-    longDescription: 'Entertain in style with this elegant and durable serving tray. The natural variations in the acacia wood grain make each piece unique. Polished brass handles provide a comfortable grip and a touch of modern sophistication.',
-    features: ['Solid Acacia Wood', 'Polished Brass Handles', 'Food-Safe Finish', 'Unique Wood Grain'],
-    createdAt: '2023-10-22T11:45:00Z',
-    updatedAt: '2023-10-22T11:45:00Z',
-  },
-];
+interface PaginationData {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
 
-
-// 4. Main Products Page Component (UPDATED)
 const Products: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [searchInput, setSearchInput] = useState<string>('');
-  const [activeSearchTerm, setActiveSearchTerm] = useState<string>('');
+  // State management remains the same
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [paginationData, setPaginationData] = useState<PaginationData | null>(null);
 
-  const categories = ['All', ...new Set(dummyProducts.map((p) => p.category))];
+  const [filterTitle, setFilterTitle] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [allTitles, setAllTitles] = useState<string[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+  const [showTitleSuggestions, setShowTitleSuggestions] = useState(false);
 
-  // Combined filtering logic remains the same
-  const filteredProducts = dummyProducts
-    .filter(product => {
-      return selectedCategory === 'All' || product.category === selectedCategory;
-    })
-    .filter(product => {
-      return product.title.toLowerCase().includes(activeSearchTerm.toLowerCase());
-    });
+  const filterContainerRef = useRef<HTMLDivElement>(null);
+
+  // Data fetching logic
+  const fetchProducts = async (page: number, title: string, category: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', '9');
+
+      const isFiltering = title || category;
+
+      if (!isFiltering) {
+        params.append('sortBy', 'updatedAt');
+        params.append('sortOrder', 'desc');
+      }
+
+      if (title) params.append('title', title);
+      if (category) params.append('category', category);
+
+      const response = await axios.get(`${import.meta.env.VITE_API_BACKEND_URL}/v1/products/getallProducts?${params.toString()}`);
       
-  const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCategory(event.target.value);
-  };
-  
-  // --- NEW: Helper function to apply the search ---
-  const applySearchFilter = () => {
-    setActiveSearchTerm(searchInput.trim());
-  };
-  
-  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      applySearchFilter();
+      const responseData = response.data.data;
+      
+      if (responseData && Array.isArray(responseData.products)) {
+        setProducts(responseData.products);
+
+        // This is our defensive check to fix the totalPages count.
+        const finalPaginationData = { ...responseData.pagination }; // Make a mutable copy
+
+        // If we are on the first page AND we received fewer items than a full page,
+        // we can confidently say there is only one total page.
+        if (page === 1 && responseData.products.length < 9) {
+          finalPaginationData.totalPages = 1;
+          finalPaginationData.hasNextPage = false; // Also correct this for consistency
+        }
+
+        setPaginationData(finalPaginationData); // Set the corrected pagination data
+
+      } else {
+        throw new Error('Invalid data structure received from API.');
+      }
+
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(`Failed to load products. Please try a different filter.`);
+      } else {
+        setError('An unknown error occurred while fetching products.');
+      }
+      setProducts([]);
+      setPaginationData(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // This useEffect now ONLY runs on the initial component mount.
+  useEffect(() => {
+    fetchProducts(1, '', ''); // Initial fetch
+    
+    const fetchAllDataForSuggestions = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_BACKEND_URL}/v1/products/getallProducts?limit=1000`);
+        const allProducts = response.data.data.products;
+
+        if (Array.isArray(allProducts)) {
+          const titles = allProducts.map(p => p.title);
+          const categories = [...new Set<string>(allProducts.map(p => p.category))];
+          setAllTitles(titles);
+          setAllCategories(categories); // Used for the <select> dropdown
+        }
+      } catch (err) {
+        console.error("Failed to fetch data for suggestions:", err);
+      }
+    };
+    fetchAllDataForSuggestions();
+  }, []);
+
+  
+  // Filter handlers remain the same
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilterTitle(value);
+    if (value) {
+      const filtered = allTitles.filter(title => title.toLowerCase().includes(value.toLowerCase()));
+      setTitleSuggestions(filtered.slice(0, 5));
+      setShowTitleSuggestions(true);
+    } else {
+      setShowTitleSuggestions(false);
+      setCurrentPage(1);
+      fetchProducts(1, '', filterCategory);
+    }
+  };
+
+  const handleCategorySelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCategory = event.target.value === 'All' ? '' : event.target.value;
+    setFilterCategory(newCategory);
+    setCurrentPage(1);
+    fetchProducts(1, filterTitle, newCategory);
+  };
+  
+  const handleTitleSuggestionClick = (suggestion: string) => {
+    setFilterTitle(suggestion);
+    setShowTitleSuggestions(false);
+    setCurrentPage(1);
+    fetchProducts(1, suggestion, filterCategory);
+  };
+  
+  const applyFilters = () => {
+    setShowTitleSuggestions(false);
+    setCurrentPage(1);
+    fetchProducts(1, filterTitle, filterCategory);
+  };
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterContainerRef.current && !filterContainerRef.current.contains(event.target as Node)) {
+        setShowTitleSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || (paginationData && newPage > paginationData.totalPages)) return;
+    setCurrentPage(newPage);
+    fetchProducts(newPage, filterTitle, filterCategory);
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
+  // JSX rendering remains the same
   return (
     <div className="bg-gray-50 font-sans min-h-screen">
       <Navigation />
@@ -121,77 +188,101 @@ const Products: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-[50vh] flex items-center">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2074&auto=format&fit=crop"
-            alt="Our Products"
-            className="w-full h-full object-cover"
-          />
+          <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2074&auto=format&fit=crop" alt="Our Products" className="w-full h-full object-cover"/>
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30"></div>
         </div>
         <div className="container mt-10 mx-auto px-4 z-10 text-center">
           <Badge variant="outline" className="mb-6 text-gold border-gold/50 bg-black/20 backdrop-blur-sm">
             Explore Our Collection
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-6">
-            Discover Premium Products
-          </h1>
-          <p className="text-xl text-cream/90 max-w-3xl mx-auto">
-            Dive into our curated selection of high-quality products, crafted to elevate your lifestyle.
-          </p>
+          <h1 className="text-3xl md:text-6xl font-playfair font-bold text-white mb-6">Discover Premium Products</h1>
+          <p className="text-base md:text-xl text-cream/90 max-w-3xl mx-auto">Dive into our curated selection of high-quality products, crafted to elevate your lifestyle.</p>
         </div>
       </section>
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <main className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-        
           <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
             <div className="text-center md:text-left">
               <h2 className="section-title">All Products</h2>
               <p className="section-subtitle">Premium Solutions for Every Space</p>
             </div>
             
-            {/* --- MODIFIED FILTERS SECTION --- */}
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-              {/* Search input and button group */}
-              <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full md:w-auto" ref={filterContainerRef}>
+              <div className="relative flex-1 min-w-[200px]">
                 <input
-                  type="text"
-                  placeholder="Search by title..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="w-full sm:w-52 px-3 border border-gray-300 rounded-lg bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800"
+                  type="text" placeholder="Search by title..." value={filterTitle}
+                  onChange={handleTitleChange}
+                  onFocus={() => { if (filterTitle) setShowTitleSuggestions(true) }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-800"
                 />
-                <button
-                  onClick={applySearchFilter}
-                  className="bg-gray-800 text-white font-semibold px-4 rounded-lg transition-colors duration-300 ease-in-out hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800"
-                >
-                  Search
-                </button>
+                {showTitleSuggestions && titleSuggestions.length > 0 && (
+                  <ul className="absolute z-10 w-full bg-white border rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
+                    {titleSuggestions.map((suggestion, index) => (
+                      <li key={index} onClick={() => handleTitleSuggestionClick(suggestion)} className="px-4 py-2 cursor-pointer hover:bg-gray-100">
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              {/* Category Dropdown */}
-              <select
-                id="category-select"
-                value={selectedCategory}
-                onChange={handleCategoryChange}
-                className="w-full sm:w-auto p-3 border border-gray-300 rounded-lg bg-white cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800"
+              <select 
+                id="category-select" 
+                value={filterCategory || 'All'}
+                onChange={handleCategorySelectChange} 
+                className="w-full sm:w-auto p-[9px] border border-gray-300 rounded-lg bg-white cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-gray-800"
               >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
+                <option value="All">All Categories</option>
+                {allCategories.map((category) => (
+                  <option key={category} value={category}>{category}</option>
                 ))}
               </select>
+
+              <button onClick={applyFilters} className="bg-gray-800 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-300 ease-in-out hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800">
+                Search
+              </button>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {isLoading && <p className="text-center text-gray-500 py-10">Loading products...</p>}
+          {error && <p className="text-center text-red-500 py-10">{error}</p>}
+          {!isLoading && !error && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {products.length > 0 ? (
+                  products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))
+                ) : (
+                  <p className="col-span-full text-center text-gray-500 py-10">No products match your criteria.</p>
+                )}
+              </div>
+
+              {paginationData && paginationData.totalPages > 1 && (
+                <div className="flex justify-between items-center mt-12 border-t pt-6">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={!paginationData.hasPrevPage}
+                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-gray-600">
+                    Page {paginationData.page} of {paginationData.totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={!paginationData.hasNextPage}
+                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </main>
       </div>
     </div>

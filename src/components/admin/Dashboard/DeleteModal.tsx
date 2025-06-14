@@ -1,6 +1,7 @@
 // src/components/admin/dashboard/DeleteModal.tsx
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 interface DeleteModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, itemName = 'this item' }: Del
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-xl p-6 w-[90%] max-w-md text-center">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Delete Item</h2>
@@ -34,7 +35,8 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, itemName = 'this item' }: Del
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

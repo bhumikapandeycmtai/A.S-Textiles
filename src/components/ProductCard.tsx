@@ -1,6 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
-import { Product } from '@/lib/data'; // Assuming you have a path alias setup for @
+// import { Product } from '@/lib/data'; // Assuming you have a path alias setup for @
+
+interface Product { 
+  id: string;
+  imageUrl: string;
+  title: string;
+  price: number;
+  category: string;
+  shortDescription: string;
+  longDescription: string;
+  features: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface ProductCardProps {
   product: Product;
@@ -24,12 +37,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       onClick={handleViewProduct}
     >
       <div className="overflow-hidden">
-        <img src={product.imageUrl} alt={product.title} className="w-full h-52 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
+        <img src={product.imageUrl} alt={product.title} className="w-full h-52 object-contain transition-transform duration-500 ease-in-out group-hover:scale-110" />
       </div>
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start gap-4 mb-3">
           <h3 className="text-lg font-bold text-gray-800">{product.title}</h3>
-          <p className="text-lg font-semibold text-gray-900 whitespace-nowrap">${product.price.toFixed(2)}</p>
+          <p className="text-lg font-semibold text-gray-900 whitespace-nowrap">${product.price}</p>
         </div>
         <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-4">{product.shortDescription}</p>
         <div className="mt-auto">

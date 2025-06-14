@@ -13,7 +13,7 @@ const Toast: React.FC<ToastProps> = ({ message, show, success = true, onClose })
     if (show && onClose) {
       const timer = setTimeout(() => {
         onClose();
-      }, 1000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [show, onClose]);

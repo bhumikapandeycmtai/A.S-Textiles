@@ -7,7 +7,7 @@
 @layer base {
   /* Hide scrollbar for all browsers by default */
   * {
-    scrollbar-width: none !important; /* Firefox */
+    scrollbar-width: none !important; /*Firefox */
     -ms-overflow-style: none !important; /* IE and Edge */
   }
 
@@ -33,10 +33,10 @@
   }
 
   /* For Firefox, show scrollbar only during active scrolling */
-  *:active {
+  /* *:active {
     scrollbar-width: thin !important;
     scrollbar-color: rgba(136, 136, 136, 0.5) transparent !important;
-  }
+  } */
 
   :root {
     --background: 40 58% 94%; /* #FAF6E9 */
@@ -85,6 +85,8 @@
 
   body {
     @apply bg-background text-foreground font-poppins;
+    height: 100%;
+    margin: 0;
     scroll-behavior: smooth;
     overflow-y: auto;
     /* Ensure scrollbar is hidden by default */

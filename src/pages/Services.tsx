@@ -28,10 +28,10 @@ const Services = () => {
           </div>
           
           <div className="container mx-auto px-4 z-10 text-center">
-            <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-4">
+            <h1 className="mt-12 sm:mt-0 text-4xl md:text-6xl font-playfair font-bold text-white mb-4">
               What We Do Best
             </h1>
-            <p className="text-xl text-cream/90 max-w-2xl mx-auto">
+            <p className="text-base md:text-xl text-cream/90 max-w-2xl mx-auto">
               Explore our diverse range of handcrafted home furnishings designed to elevate every space with elegance and tradition
             </p>
           </div>

@@ -4,37 +4,46 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import StickyChat from '@/components/StickyChat';
 import { Badge } from "@/components/ui/badge";
+import axios from 'axios';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    message: ''
+    message: '',
+    timestamp: ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    // try {
-    //   await addDoc(collection(db, 'contacts'), {
-    //     ...formData,
-    //     timestamp: serverTimestamp()
-    //   });
-    //   setSuccess(true);
-    //   setFormData({ name: '', email: '', phone: '', message: '' });
-    // } catch (err) {
-    //   setError('Failed to send message. Please try again.');
-    //   console.error('Error submitting form:', err);
-    // }
-    
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setSuccess(false);
+
+  try {
+    const date = new Date().toISOString()
+    await axios.post('https://a-s-textiles.vercel.app/v1/contacts/newContact', {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      message: formData.message,
+      timestamp: date,
+      status: "new"
+    });
+
+    setSuccess(true);
+    setFormData({ name: '', email: '', phone: '', message: '', timestamp: '' });
+  } catch (err) {
+    setError('Failed to send message. Please try again.');
+    console.error('Error submitting form:', err);
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -63,10 +72,10 @@ const Contact = () => {
             <Badge variant="outline" className="mb-6 text-gold border-gold/50 bg-black/20 backdrop-blur-sm">
               Connect With Us
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-6">
+            <h1 className="text-3xl md:text-6xl font-playfair font-bold text-white mb-2 sm:mb-6">
               Get in Touch
             </h1>
-            <p className="text-xl text-cream/90 max-w-3xl mx-auto">
+            <p className="text-base sm:text-xl text-cream/90 max-w-3xl mx-auto">
               Transform your space into a masterpiece. Contact us to begin your journey.
             </p>
           </div>

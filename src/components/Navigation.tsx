@@ -9,11 +9,7 @@ const Navigation = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -21,15 +17,32 @@ const Navigation = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+  
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isMenuOpen]);
+
 
   return (
     <motion.header 
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
+      // --- CHANGE 1: Update background logic ---
+      // The background is now white/shadowed if scrolled OR if the menu is open.
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled ? 'bg-white/95 shadow-md py-2' : 'bg-transparent py-4'
+        isScrolled || isMenuOpen
+          ? 'bg-white/95 shadow-md py-2' 
+          : 'bg-transparent py-4'
       )}
     >
       <div className="container mx-auto px-4 md:px-6">
@@ -42,20 +55,23 @@ const Navigation = () => {
               alt="A.S textiles Logo"
               className={cn(
                 'h-16 w-auto transition-all duration-300',
-                isScrolled ? 'h-16' : 'h-16'
               )}
-              
             />
           </Link>
 
           {/* Mobile Menu Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className="lg:hidden text-2xl"
+            className="lg:hidden text-2xl z-10" // Add z-10 to ensure it's above the menu content
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <span className={isScrolled ? 'text-olive' : 'text-white'}>
-              {isMenuOpen ? 'x' : '☰'}
+            {/* --- CHANGE 2: Update icon color logic --- */}
+            {/* The icon color is now dark if scrolled OR if the menu is open. */}
+            <span className={cn(
+              'transition-colors',
+              isScrolled || isMenuOpen ? 'text-olive' : 'text-white'
+            )}>
+              {isMenuOpen ? '✕' : '☰'} {/* Using a proper close icon '✕' */}
             </span>
           </motion.button>
 
@@ -87,12 +103,15 @@ const Navigation = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="lg:hidden pt-4 pb-2 flex flex-col items-center space-y-4 bg-white mt-2 rounded-md shadow-md overflow-hidden"
+              // --- CHANGE 3: Simplify mobile menu styling ---
+              // Remove bg, shadow, rounded corners, and top margin.
+              // The parent <header> now provides the background and shadow.
+              className="lg:hidden pt-4 pb-2 flex flex-col items-center space-y-4 overflow-hidden"
             >
               <MobileNavLink to="/" onClick={() => setIsMenuOpen(false)}>Home</MobileNavLink>
               <MobileNavLink to="/about" onClick={() => setIsMenuOpen(false)}>About Us</MobileNavLink>
               <MobileNavLink to="/services" onClick={() => setIsMenuOpen(false)}>Services</MobileNavLink>
-              <MobileNavLink to="/gallery" onClick={() => setIsMenuOpen(false)}>Gallery</MobileNavLink>
+              <MobileNavLink to="/products" onClick={() => setIsMenuOpen(false)}>Products</MobileNavLink>
               <MobileNavLink to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</MobileNavLink>
               <motion.a
                 whileHover={{ scale: 1.05 }}
@@ -100,7 +119,8 @@ const Navigation = () => {
                 href="https://wa.me/919812640115"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-primary w-full text-center justify-center"
+                className="btn-primary w-full text-center justify-center mt-2" // Add some margin top to separate from links
+                onClick={() => setIsMenuOpen(false)}
               >
                 Get Quote
               </motion.a>
@@ -111,6 +131,8 @@ const Navigation = () => {
     </motion.header>
   );
 };
+
+// --- No changes needed for these sub-components ---
 
 interface NavLinkProps {
   to: string;
